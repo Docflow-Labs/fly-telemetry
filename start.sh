@@ -11,7 +11,7 @@ filter() { envsubst < "$1" | sponge "$1"; }
 filter alertmanager.yml
 alertmanager \
   --storage.path=/data/alertmanager \
-  --web.external-url="${FLY_APP_NAME}.internal:9093" \
+  --web.external-url="http://${FLY_APP_NAME}.internal:9093/" \
   --cluster.advertise-address="[${FLY_PRIVATE_IP}]:9094" \
   --cluster.peer="${FLY_APP_NAME}.internal:9094" &
 

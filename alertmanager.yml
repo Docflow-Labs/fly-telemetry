@@ -14,4 +14,5 @@ receivers:
     slack_configs: [{}]
   - name: log_alert
     slack_configs:
-      - text: "{{ range .Alerts }}```{{ .Annotations.log }}```\n{{ end }}"
+      - text: "{{ range .Alerts }}```{{ .Labels.message }}```\n{{ end }}"
+        title: "{{ range .GroupLabels.SortedPairs }}{{ .Value }} {{ end }}"

@@ -74,8 +74,9 @@ transforms:
     inputs: ['logs', 'cluster-route.logs']
     source: |
       if !starts_with(string!(.message), "[ALERT]") { abort }
-      .labels = .
-      .endsAt = format_timestamp(from_unix_timestamp!(to_unix_timestamp(.labels.timestamp) + 60), "%+")
+      .labels = flatten(del(.))
+      .labels.alertname = "LogAlert"
+      .endsAt = format_timestamp!(from_unix_timestamp!(to_unix_timestamp(now()) + 59), "%+")
 
 sinks:
   metrics_db:
