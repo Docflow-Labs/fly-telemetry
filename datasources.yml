@@ -21,3 +21,17 @@ datasources:
     uid: application_logs
     access: proxy
     url: http://localhost:9428
+  - name: Postgres
+    uid: postgres_meta_tools
+    type: postgres
+    access: proxy
+    url: meta-tools-db.internal:5432
+    user: grafana_reader
+    secureJsonData:
+      password: gr4f4n4_r34d0nly
+    jsonData:
+      database: meta_tools
+      sslmode: disable
+      maxOpenConns: 2
+      maxIdleConns: 2
+      connMaxLifetime: 14400

@@ -1,5 +1,20 @@
-build.image = "flyio/fly-telemetry"
+app = "docflow-telemetry"
+primary_region = "lax"
+
+[build]
+dockerfile = "Dockerfile"
+
 swap_size_mb = 1024
-vm.memory="1gb"
-mounts={source="data", destination="/data"}
-http_service.internal_port=3000
+
+[vm]
+memory = "1gb"
+
+[mounts]
+source = "data"
+destination = "/data"
+
+[env]
+ORG = "personal"
+
+[http_service]
+internal_port = 3000

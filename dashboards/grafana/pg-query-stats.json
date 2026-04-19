@@ -1,0 +1,109 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Top Queries by Total Time",
+      "type": "table",
+      "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "total_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "mean_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "min_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "max_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "query" }, "properties": [{ "id": "custom.width", "value": 600 }] }
+        ]
+      },
+      "targets": [{
+        "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+        "rawSql": "SELECT\n  left(query, 200) as query,\n  calls,\n  round(total_exec_time::numeric, 1) as total_time,\n  round(mean_exec_time::numeric, 1) as mean_time,\n  round(min_exec_time::numeric, 1) as min_time,\n  round(max_exec_time::numeric, 1) as max_time,\n  rows,\n  round((shared_blks_hit::numeric / nullif(shared_blks_hit + shared_blks_read, 0)) * 100, 1) as cache_hit_pct\nFROM pg_stat_statements\nWHERE dbid = (SELECT oid FROM pg_database WHERE datname = 'meta_tools')\nORDER BY total_exec_time DESC\nLIMIT 25",
+        "format": "table",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Slowest Queries (by avg time)",
+      "type": "table",
+      "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 10 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "mean_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "max_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "query" }, "properties": [{ "id": "custom.width", "value": 600 }] }
+        ]
+      },
+      "targets": [{
+        "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+        "rawSql": "SELECT\n  left(query, 200) as query,\n  calls,\n  round(mean_exec_time::numeric, 1) as mean_time,\n  round(max_exec_time::numeric, 1) as max_time,\n  rows,\n  round(total_exec_time::numeric, 1) as total_time\nFROM pg_stat_statements\nWHERE dbid = (SELECT oid FROM pg_database WHERE datname = 'meta_tools')\n  AND calls > 5\nORDER BY mean_exec_time DESC\nLIMIT 25",
+        "format": "table",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Most Frequently Called Queries",
+      "type": "table",
+      "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "total_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "mean_time" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "query" }, "properties": [{ "id": "custom.width", "value": 600 }] }
+        ]
+      },
+      "targets": [{
+        "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+        "rawSql": "SELECT\n  left(query, 200) as query,\n  calls,\n  rows,\n  round(total_exec_time::numeric, 1) as total_time,\n  round(mean_exec_time::numeric, 1) as mean_time,\n  round((shared_blks_hit::numeric / nullif(shared_blks_hit + shared_blks_read, 0)) * 100, 1) as cache_hit_pct\nFROM pg_stat_statements\nWHERE dbid = (SELECT oid FROM pg_database WHERE datname = 'meta_tools')\nORDER BY calls DESC\nLIMIT 25",
+        "format": "table",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Database Summary",
+      "type": "table",
+      "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 30 },
+      "targets": [{
+        "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+        "rawSql": "SELECT\n  datname as database,\n  pg_size_pretty(pg_database_size(datname)) as size,\n  numbackends as connections,\n  xact_commit as commits,\n  xact_rollback as rollbacks,\n  blks_hit as cache_hits,\n  blks_read as disk_reads,\n  round(100.0 * blks_hit / nullif(blks_hit + blks_read, 0), 2) as cache_hit_pct,\n  deadlocks\nFROM pg_stat_database\nWHERE datname = 'meta_tools'",
+        "format": "table",
+        "refId": "A"
+      }]
+    },
+    {
+      "title": "Table Sizes & Dead Tuples",
+      "type": "table",
+      "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 30 },
+      "targets": [{
+        "datasource": { "uid": "postgres_meta_tools", "type": "postgres" },
+        "rawSql": "SELECT\n  relname as table_name,\n  pg_size_pretty(pg_total_relation_size(relid)) as total_size,\n  n_live_tup as live_rows,\n  n_dead_tup as dead_rows,\n  last_autovacuum::date as last_vacuum\nFROM pg_stat_user_tables\nORDER BY pg_total_relation_size(relid) DESC\nLIMIT 15",
+        "format": "table",
+        "refId": "A"
+      }]
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["postgres", "queries"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "title": "Postgres Query Stats",
+  "uid": "pg-query-stats"
+}
